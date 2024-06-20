@@ -1,12 +1,12 @@
 # Union Filesystem Lab
 ```
 # Create some directories:
-mkdir -p ~/jotb/{image,c1_container,c1_work,container1}
+mkdir -p ~/workshop/{image,con1_upper,con1_work,container1}
 ```
 
 ```
 # cd into the main directory:
-cd ~/jotb
+cd ~/workshop
 ```
 
 ```
@@ -19,39 +19,40 @@ arch="${arch/amd64/x86_64}"
 ```
 # wget Alpine:
 wget -qO- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/"${arch}"/alpine-minirootfs-3.19.1-"${arch}".tar.gz \
-     | tar xvz -C ~/jotb/image
+     | tar xvz -C ~/workshop/image
 ```
 
 ```
 # Create an overlay filesystem
 sudo mount -t overlay \
-  -o lowerdir=image,upperdir=c1_container,workdir=c1_work \
+  -o lowerdir=image,upperdir=con1_upper,workdir=con1_work \
      overlay container1
 ```
 
 ```
 # List files in different layers:
-ls -l ~/jotb/image
-ls -l ~/jotb/c1_container
-ls -l ~/jotb/container1
+ls -l ~/workshop/image
+ls -l ~/workshop/con1_upper
+ls -l ~/workshop/container1
 ```
 
 ```
 # Create files in different layers:
-echo "AAA" > ~/jotb/image/AAA
-echo "BBB" > ~/jotb/c1_container/BBB
+echo "AAA" > ~/workshop/image/AAA
+echo "BBB" > ~/workshop/con1_upper/BBB
 ```
 
 ```
 # Change a file in the container layer:
-echo "aaa" > ~/jotb/c1_container/AAA
+echo "aaa" > ~/workshop/con1_upper/AAA
 ```
 
 ```
 # Check the contents of file AAA in each layer:
-cat ~/jotb/image/AAA
-cat ~/jotb/c1_container/AAA
-cat ~/jotb/container1/AAA
+cat ~/workshop/image/AAA
+cat ~/workshop/con1_upper/AAA
+cat ~/workshop/container1/AAA
+
 ```
 
 ```
@@ -64,7 +65,7 @@ PATH=$PATH:/bin
 unshare --fork --uts --pid --mount \
         --user --ipc --net \
         --map-root-user \
-        chroot ~/jotb/container1 \
+        chroot ~/workshop/container1 \
         /bin/sh
 ```
 
@@ -109,21 +110,21 @@ cat BBB
 
 ```
 # Add a group and user:
-addgroup -g 12345 jotb_g
-adduser -H -S -u 54321 jotb_u -G jotb_g
+addgroup -g 12345 workshop_g
+adduser -H -S -u 54321 workshop_u -G workshop_g
 ```
 
 # Containers are Magic!
 ```
 # Prepare directories for a second container
-mkdir -p ~/jotb/{c2_container,c2_work,container2}
-cd ~/jotb
+mkdir -p ~/workshop/{con2_upper,con2_work,container2}
+cd ~/workshop
 ```
 
 ```
 # Create a second overlay filesystem
 sudo mount -t overlay \
-  -o lowerdir=image,upperdir=c2_container,workdir=c2_work \
+  -o lowerdir=image,upperdir=con2_upper,workdir=con2_work \
      overlay container2
 ```
 
@@ -137,7 +138,7 @@ PATH=$PATH:/bin
 unshare --fork --uts --pid --mount \
         --user --ipc --net \
         --map-root-user \
-        chroot ~/jotb/container2 \
+        chroot ~/workshop/container2 \
         /bin/sh
 ```
 
@@ -156,9 +157,9 @@ echo "222" > /BBB
 
 ```
 # Check the contents of files from the host:
-cat ~/jotb/image/AAA
-cat ~/jotb/c2_container/AAA
-cat ~/jotb/c2_container/BBB
+cat ~/workshop/image/AAA
+cat ~/workshop/con2_upper/AAA
+cat ~/workshop/con2_upper/BBB
 ```
 
 ```
@@ -171,7 +172,7 @@ exit
 unshare --fork --uts --pid --mount \
         --user --ipc --net \
         --map-root-user \
-        chroot ~/jotb/container2 \
+        chroot ~/workshop/container2 \
         /bin/sh
 ```
 # Container Properties
@@ -183,25 +184,25 @@ exit
 ```
 # "Drop" the container:
 sudo umount container2
-rm -fr ~/jotb/container2
-rm -fr ~/jotb/c2_container
-rm -fr ~/jotb/c2_work
+rm -fr ~/workshop/container2
+rm -fr ~/workshop/con2_upper
+rm -fr ~/workshop/con2_work
 ```
 # Building Images
 ```
 # Create some directories:
-mkdir -p ~/jotb/{image,c3_container,c3_work,container3}
+mkdir -p ~/workshop/{image,con3_upper,con3_work,container3}
 ```
 
 ```
 # cd into the main directory:
-cd ~/jotb
+cd ~/workshop
 ```
 
 ```
 # Create an overlay filesystem
 sudo mount -t overlay \
-  -o lowerdir=container1,upperdir=c3_container,workdir=c3_work \
+  -o lowerdir=container1,upperdir=con3_upper,workdir=con3_work \
      overlay container3
 ```
 
@@ -215,7 +216,7 @@ PATH=$PATH:/bin
 unshare --fork --uts --pid --mount \
         --user --ipc --net \
         --map-root-user \
-        chroot ~/jotb/container3 \
+        chroot ~/workshop/container3 \
         /bin/sh
 ```
 
@@ -224,5 +225,5 @@ unshare --fork --uts --pid --mount \
 sudo umount container3
 sudo umount container1
 cd ~
-rm -fr ~/jotb
+rm -fr ~/workshop
 ```
